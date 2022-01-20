@@ -35,3 +35,29 @@ Here are some important data for gas costs:
 type(uint8).max = 255, type(int8).max = 127
 
 #Apagar Depois
+
+# godonation-contracts
+
+
+## Proposito
+
+<p>Com o intuito de tornar o processo de ONGs receberem doacoes e de doadores fazerem doacoes a ONGs mais seguro, acessivel, descentralizado, facil e rapido, a GoBlockchain torna publica uma solucao que usa da tecnologia do Blockchain a fim de alcancar o intuito descrito.</p>
+
+#### Funcionalidade
+
+<p>Nesta secao, estao descritas todas as funcionalidades possiveis ao usuario, tanto o usuario que sera apenas um doador, tanto o usuario que sera apenas uma ONG, e tambem para um usuario que sera ambos. De forma visual, as funcionalidade estao descritas no diagrama UML.</p>
+
+##### Diagrama UML
+
+Anexar Diagrama UML
+
+##### Doador
+<p>Classe Doador:</p>
+`doador: address`: o doador sera identificado por seu respectivo `address` de sua carteira.
+`ongs: array[string]`: uma variavel que representa a lista de ONGs disponiveis para receber uma doacao.
+`Projetos: struct`: uma variavel modelo do tipo struct da linguagem Solidity usada para a criacao de um novo projeto que recebera doacao dentro de uma ONG.
+`projetos: array[Projetos]`: A variavel `projetos` e' uma listade todos os projetos disponiveis parla receber doacoes.
+
+
+##### ONG
+~                
