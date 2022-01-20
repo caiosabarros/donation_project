@@ -34,4 +34,4 @@ Is there a limit to how many projects can be added into the DApp?
 Here are some important data for gas costs:
 type(uint8).max = 255, type(int8).max = 127
 
-
+#Apagar Depois
