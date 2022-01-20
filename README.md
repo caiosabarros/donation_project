@@ -28,9 +28,10 @@ function getBalance(): functionality of retrieving a project's balance.
 function donate(): it allows an individual to make a donation to a specific project.
 function withdraw(): function that withdraws all the cryptocurrency assets donated to a project till such a time of being called. The function is restricted to the representative of the ONG through his address. The function also is called receiving the id of the project from which the money is being withdrawn. 
 
-Questions: 
+#Questions: 
 Is there a limit to how many projects can be added into the DApp?
 
 Here are some important data for gas costs:
 type(uint8).max = 255, type(int8).max = 127
+
 
