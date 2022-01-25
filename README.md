@@ -1,66 +1,79 @@
 # godonation-contracts
 
 
-# Proposito
+# Propósito
 
-<p>Com o intuito de tornar o processo de ONGs receberem doacoes e de doadores fazerem doacoes a ONGs mais seguro, acessivel, descentralizado, facil e rapido, a GoBlockchain torna publica uma solucao que usa da tecnologia do Blockchain a fim de alcancar o intuito descrito.</p>
+<p>Com o intuito de tornar o processo de ONGs receberem doações e de doadores fazerem doações a ONGs mais seguro, acessível, descentralizado, transparente e rápido, a GoBlockchain torna publica uma solução que usa da tecnologia do Blockchain a fim de alcançar o intuito descrito.</p>
 
 # Funcionalidades
 
-<p>Nesta secao, estao descritas todas as funcionalidades possiveis ao usuario, tanto o usuario que sera apenas um doador, tanto o usuario que sera apenas uma ONG, e tambem para um usuario que sera ambos. De forma visual, as funcionalidade estao descritas no diagrama UML.</p>
+<p>Nesta seção, estão descritas todas as funcionalidades possíveis ao usuário, tanto o usuário como um doador, quanto o usuário como uma ONG, e também para o usuário que será ambos. De forma visual, as funcionalidade estão representadas no diagrama UML.</p>
 
 ## Diagrama UML
 
-Anexar Diagrama UML
+![image](https://user-images.githubusercontent.com/82603176/151069691-bf9c87ea-ec5d-4681-bd5b-f75cdd5cbddc.png)
+
 
 ## Descricao do UML:
 
-## Contrato Doacao:
+## Contrato Doação:
 
-<p>Responsabilidade: Responsavel por definir as principais funcoes de interacao do usuario com o DApp de doacoes para as ONGs, assim como permite um usuario de criar suas propria ONG e criar projetos atrelada a mesma a fim de receber doacoes.</p>
+<p>Responsabilidade: Responsável por definir as principais funções de interação do usuário com o DApp de doações para as ONGs, assim como permite um usuário de criar suas propria ONG e criar projetos atrelada a mesma a fim de receber doações.</p>
 
-### Funcoes:
+## Eventos:
+
+`DoacaoRealizada:Projeto.saldo (uint128,bool)` : Evento retorna ao usuário informação relevantes sobre a função fazerDoacao()
+
+`ResponsavelAlterado(address to, address from)`: Evento retorna o antigo responsável pelo contrato e o novo, será emitida ao final da função mudarResponsável
+
+`SaqueRealizado(uint128, address)` Evento retorna o responsável pelo saque e o valor sacado, será emitida ao final da função FinalizarProjeto()
+
+`ProjetoFinalizado(saldo,address)`Evento retorna o responsável pelo projeto finalizado e o valor arrecadado, será emitida ao final da função sacarSaldo()
+
+`ProjetoCriado(Struct Projeto): address' Evento retorna o endereço do contrato do projeto e a struct Projeto, será emitida ao final da função CriarProjeto()
+
+### Funções:
 
 `criarONG(string _ongNome)`: cria uma struct ONG com o ongNome igual a string passada como argumento.
 
 `criarProjeto(string _projetoNome, uint128 _meta)`: cria uma struct de um projeto, com seu respectivo nome e meta de doacoes a ser alcancada.
 
-`mudarResponsavel(address _novoResponsavel)`: delega outro endereco na rede blockchain para ser o responsavel pelos saques dos fundos doados aos projetos da ONG.
+`mudarResponsavel(address _novoResponsavel)`: delega outro endereço na rede blockchain para ser o responsável pelo contrato inteligente do projetos da ONG ao qual foi indicado a mudança, mudando o dono do projeto e conferindo ao mesmo funções de saque e finalização do projeto.
 
-`sacarSaldo(uint16 _projetoID)`: permite apenas ao responsavel pela ONG sacar o saldo armazenado dentro de um projeto a partir das doacoes realizadas pelos doadores.
+`sacarSaldo(uint16 _projetoID)`: permite apenas ao responsável pela ONG e pelo contrato inteligente do projeto sacar o saldo armazenado dentro de um projeto a partir das doações realizadas pelos doadores.
 
-`finalizarProjeto()`: finaliza a oportunidade de o projeto continuar recebendo doacoes. A funcao sacarSaldo() deve ser usada a fim de o saldo de doacoes ser sacado mesmo depois de o projeto haver sido finalizado.
+`finalizarProjeto()`: finaliza a oportunidade de o projeto continuar recebendo doações. A função sacarSaldo() deve ser usada a o fim de resgatar o saldo de doações mesmo depois de o projeto haver sido finalizado.
 
-`fazerDoacao(uint16 _projetoID)`: Usuario escolhe um projeto por meio do seu ID e realiza a doacao por meio do msg.value
+`fazerDoacao(uint16 _projetoID)`: Usuário escolhe um projeto por meio do seu ID e realiza a doação via msg.value
 
-### Funcoes de Leitura:
+### Funções de Leitura:
 
-Estas funcoes abaixo apenas fazem a requisicao de dados contidos na blockchain a fim de usuario ter um registro do que realmente esta' acontecendo na aplicacao.
+Estas funções abaixo fazem a requisição de dados contidos na blockchain a fim de trazer ao usuário um registro do que realmente está acontecendo na aplicação.
 
-`verONGs() => Array<struct:ONG>`: retorna uma lista de todas as ONGs atualmente cadastradas na aplicacao.
+`verONGs() => Array<struct:ONG>`: retorna uma lista de todas as ONGs atualmente cadastradas na aplicação.
 
 `verProjetos(uint16 _ongID) => Array<struct:Projetos>`: retornar uma lsita de todos os projetos de uma determinada ONG.
 
-`verDoadores(uint16 _projetoID) => array<address: Projetos.doadores>`: retorna uma lista de enderecos que fizeram uma doacao para um determinado projeto.
+`verDoadores(uint16 _projetoID) => array<address: Projetos.doadores>`: retorna uma lista de endereços que fizeram uma doação para um determinado projeto.
 
 `verValores(uint16 _projetoID) => array<uint128: Projetos.valores>`: retorna uma lista de todos os valores doados a um determinado projeto.
 
-`verSomaSaldosONG(uint16 _ongID) => uint128 ONG.ongSaldo`: retorna o valor da soma de todas as doacoes de todos os projetos dentro daquela ONG por meio do struct ONG e do parametro ongSaldo dentro do struct.
+`verSomaSaldosONG(uint16 _ongID) => uint128 ONG.ongSaldo`: retorna o valor da soma de todas as doações de todos os projetos dentro daquela ONG por meio do struct ONG e do parâmetro ongSaldo dentro do struct.
 
-`verSaldo(uint16_ projetoID) => uint128 Projetos.saldo`: retorna o valor doado ate' agora para um determinado projeto.
+`verSaldo(uint16_ projetoID) => uint128 Projetos.saldo`: retorna o valor doado até agora para um determinado projeto.
 
-`verDoacaoTotalDApp() => uint 128 doacaoTotalDApp`: retorna o valor acumlado de todas as doacoes entre todos os projetos dentro da DApp.
+`verDoacaoTotalDApp() => uint 128 doacaoTotalDApp`: retorna o valor acumlado de todas as doaçães entre todos os projetos dentro da DApp.
 
-`verDoacoes(address _address) => ************`: retorna o registro de todas as doacoes de determinado usuario.
+`verDoacoes(address _address) => ************`: retorna o registro de todas as doações de determinado usuário.
 
 	 
-### Descricao de Variaveis:
+### Descrição de Variáveis:
 
-<p>Algumas variaveis fazem-se necessarias para que as funcoes acima desempenhem os seus papeis:</p>
+<p>Algumas variáveis são necessárias para que as funções acima desempenhem os seus papeis:</p>
 
-`struct Projeto`: um novo smart contract e' criado quando a funcao `criarProjeto()` e' chamada. Este novo smart contract conte'm as caracteristicas do projeto determinado em uma struct. O smart contract pode entao receber doacoes que ficarao nele e serao sacadas apenas pelo responsavel da ONG. Um projeto segue a seguinte estrutura: 
+`struct Projeto`: Contrato inteligente periferíco ao contrato doação. Quando a função `criarProjeto()` é chamada. E criado um novo contrato inteligente que contém as características do projeto determinado em uma struct. O smart contract pode então receber doações que serão sacadas apenas pelo responsável da ONG/Projeto. Um projeto segue a seguinte estrutura: 
 ```
-Projeto:
+struct Projeto:
 projetoNome: string,
 projetoID: uin16,
 responsavel: address,
@@ -71,9 +84,9 @@ projetoDoacoes: mapping(address, uint128),
 meta: uint128
 ```
 
-<p>Todos os parametros que nao foram passados na funcao `criarProjeto()` serao desenvolvidos por tra's das cameras 'a medida que o dono do projeto e os doadores interagem com o projeto.</p>
+<p>Os inputs necessários por parte da ONG que está criando o projeto são: <projetoNome> e <meta>. Parâmetro responsável será igual ao endereço da carteira <msg.sender> que chamou a função criarProjeto(), <projetoId> será uma uint16 incrementada a cada novo projeto criado.Todos os parâmetros que não foram passados na função `criarProjeto()` serão desenvolvidos no backend a medida que o dono do projeto e os doadores interagem com o projeto. </p>
 
-<p>No contrato Doacao, entretanto, havera muitas outras variaveis:</p>
+<p>No contrato Doação, entretanto, haverá outras variáveis:</p>
 
 Estrutura ONG:
 ```
@@ -86,11 +99,11 @@ ongID: uint16
 
 ---
 
-`projetosNumero`: atuara como um contador de projetos para identificar cada projeto com um ID especifico.
+`projetosNumero`: atuará como um contador de projetos para identificar cada projeto com um ID específico.
 
 ---
 
-`mapping(uint16 projetoID, struct Projeto) projetos`: responsavel por ligar cada ID a uma determinada estrutura de projeto.
+`mapping(uint16 projetoID, struct Projeto) projetos`: responsável por ligar cada ID a uma determinada estrutura de projeto.
 
 ---
 
@@ -102,7 +115,7 @@ ongID: uint16
 
 ----
 
-`ongsNumero uint16`: atuara como contador para identificar cada ONG com um determinado ID especifico e unico.
+`ongsNumero uint16`: atuará como contador para identificar cada ONG com um determinado ID específico e único.
 
 ----
 
@@ -110,7 +123,7 @@ ongID: uint16
 
 ---
 
-`enum statusProjeto{ Aberto, Finalizado, Sacado}`: enumera  tres estados possiveis para um projeto em relacao a sua disponibilidade de receber doacoes. Modo Aberto: projeto aceita doacoes e ainda nao pode ter o saque efetuado. Modo Finalizado: projeto nao aceita mais doacoes e pode ter o saque efetuado. Modo Sacado: projeto nao aceita mais doacoes e ja teve seu saldo sacado, ficando apenas disponivel para visualizacao agora.
+`enum statusProjeto{ Aberto, Finalizado, Sacado}`: enumera  tres estados possíveis para um projeto em relação a sua disponibilidade de receber doações. Modo Aberto: projeto aceita doações e ainda não pode ter o saque efetuado. Modo Finalizado: projeto não aceita mais doações e pode ter o saque efetuado. Modo Sacado: projeto não aceita mais doações e já teve seu saldo sacado, ficando apenas disponível para visualização.
 
 |                |Aberto                          |Finalizado                         |   Sacado                                 |
 |----------------|----------------|----------------|------------------
@@ -123,9 +136,9 @@ ongID: uint16
 
 ----
 
-`listaDoacoes: mapping(string projetoNome, uint128)`: armazena uma lista com todos os valores individuais sendo doados a um determinado projeto.
+`listaDoacoes: mapping(string projetoNome, uint128)`: armazena uma lista com todos os valores indivíduais sendo doados a um determinado projeto.
 
 ----
 
-`doacaoTotalDApp: uint128`: armazena o valor total de doacoes da DApp ate' o momento.
+`doacaoTotalDApp: uint128`: armazena o valor total de doações da DApp até o momento.
 
