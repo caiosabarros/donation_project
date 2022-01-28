@@ -18,8 +18,10 @@ enum StatusProjeto {Aberto, Finalizado}
 contract Donation {
 
   uint16 ongsNumero;
-  mapping(address => ONG) ongs;
+  mapping(address => ONG) public ongs;
   ONG[] public ongsLista;
+
+  event FazerDoacao(uint256 _valor, string _projetoNome);
 
   StatusProjeto public statusProjeto;
 
@@ -53,6 +55,8 @@ contract Donation {
 
   function criarProjeto(string memory _projetoNome, uint128 _meta) public {   
     //Throw revert automatically if caller hasn't an ONG
+    //https://ethereum.stackexchange.com/questions/4559/operator-not-compatible-with-type-string-storage-ref-and-literal-string
+    require(keccak256(bytes(ongs[msg.sender].ongNome)) != keccak256(bytes("")), "Voce precisa criar uma ONG primeiro");     
     ONG storage o = ongs[msg.sender];
     //Cheack Why this is no updating
     o.projetosNumero++;
@@ -74,11 +78,12 @@ contract Donation {
     //The project's address is dependent on the ONGs address and the projectID 
     ONG memory o = ongs[_ongOwner];
     //Check if contract is finalizado, then revert if so!
-    (,,,,,StatusProjeto status) = o.contratos[_projetoID].projeto();
+    (,string memory projetoNome,,,,StatusProjeto status) = o.contratos[_projetoID].projeto();
     if(status != StatusProjeto.Aberto){revert("Projeto finalizado");}
     //https://solidity-by-example.org/sending-ether/
     (bool sent, bytes memory data) = payable(address(o.contratos[_projetoID])).call{value: msg.value}("");
     o.contratos[_projetoID].projetoUpdate(msg.value, msg.sender);
+    emit FazerDoacao(msg.value, projetoNome);
   }
 
   function finalizarProjeto(uint16 _projetoID) public {
