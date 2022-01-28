@@ -2,35 +2,98 @@
 
 pragma solidity >=0.7.0 <0.9.0;
 
+//para retornar uma struct na função, precisa do ABIEncoderV2
+pragma experimental ABIEncoderV2;  
+
 //Deixar uma variavel constante fora de escopo dos contratos
 //permite ela ser acessivel a todos os contratos.
 struct Projeto {
-  uint16 projetoID;
+  //uint16 projetoID; acho que essa estrutura pode estar fora
   string projetoNome;
   address responsavel;
   uint256 saldo;
   uint128 meta;
   StatusProjeto status;
 }
+contract contratoProjeto {
+
+    constructor (
+    //uint16 _projetoID, 
+    string memory _projetoNome, 
+    address _responsavel,
+    uint256 _saldo,
+    uint128 _meta
+    ){
+   // projeto.projetoID = _projetoID; //coloquei no contrato doacao como uma variavel -> mapping, e dai ++ dentro da funcao criarprojeto
+    Projeto.projetoNome= _projetoNome;
+    Projeto.responsavel = msg.sender;
+    Projeto.saldo = _saldo;
+    Projeto.meta = _meta;
+//    projetoStatus = StatusProjeto.Aberto;
+    }  
+  
+    //https://solidity-by-example.org/sending-ether/
+    receive() external payable {}
+
+    //https://solidity-by-example.org/sending-ether/
+    fallback() external payable {}
+
+  
+  address[] doadores;
+  uint256[] valores;
+
+//  StatusProjeto projetoStatus;
+
+  modifier onlyOwner(address _owner) {
+    require(_owner == Projeto.responsavel, "Not authorized");
+    _;
+  }
+
+  modifier onlyStatus(StatusProjeto statusEsperado) { 
+    require(statusEsperado == Projeto.status);
+    _;     
+  }
+
+  
+    //function projetoVer() public view returns(Projeto memory) {
+    //  return projeto;
+    //}
+
+    //function projetoDoacoes() public view returns(address[] memory){
+    //return doadores;
+    //}
+
+    //function projetoValores() public view returns(uint256[] memory){
+    // return valores;
+    //}
+
+    //function projetoUpdate(uint256 _doacao, address _doador) public {
+    //projeto.saldo = address(this).balance;
+    //doadores.push(_doador);
+    //valores.push(_doacao);
+    //}
+
+    //function projetoFinalizar() onlyStatus(StatusProjeto.Aberto) public {
+    //projeto.status = StatusProjeto.Finalizado;
+    //} 
+
+    //function projetoSacar(address _owner) onlyOwner(_owner) onlyStatus(StatusProjeto.Finalizado) public payable{
+    //Devemos restringir essa funcao? Pois, alguem pode doar depositar
+    //depois que o projeto estiver finalizado, mas tabem o dono pode sacar
+    //a qualquer momento
+    //(bool sent, bytes memory data) = payable(projeto.responsavel).call{value: address(this).balance}("");     
+    //projeto.saldo = address(this).balance;
+    //}
+
+}
+
 
 enum StatusProjeto {Aberto, Finalizado}
 
 contract Donation {
 
-  uint16 ongsNumero;
-  mapping(address => ONG) ongs;
-  ONG[] public ongsLista;
 
   StatusProjeto public statusProjeto;
-
-  modifier onlyStatus(StatusProjeto statusEsperado){ 
-    if(statusEsperado == statusProjeto){_;} 
-    else {revert("Ola");}
-  }
-
-//  modifier onlyOwner(address _address){
-//    ONG memory o = ongs[msg.sender];
-//  }
 
   struct ONG {
     address owner;
@@ -41,7 +104,47 @@ contract Donation {
     contratoProjeto[] contratos;
   }
 
-  function criarONG(string memory _ongNome) public  {
+    uint16 ongsNumero;
+    mapping(address => ONG) ongs;
+    ONG[] public ongsLista;
+
+    uint16 Idprojeto;
+    mapping(uint16 => Projeto) ProjetosId;
+    Projeto[] public projetos;
+
+
+    event ProjetoCriado(
+        uint ProjetoID,
+        uint128 Meta,
+        bool Criado
+    );
+
+    event DoacaoRealizada(
+        uint ProjetoID,
+        uint128 Valor,
+        bool Realizado
+    );
+
+     event SaqueRealizado(
+        uint128 TotalSaque,
+        address RealizadoPor
+    );
+     event ProjetoFinalizado(
+        uint256 ValorArrecadado,
+        address Finalizadopor
+    );
+
+  modifier onlyStatus(StatusProjeto statusEsperado){ 
+    if(statusEsperado == statusProjeto){_;} 
+    else {revert("Ola");}
+  }
+
+//  modifier onlyOwner(address _address){
+//    ONG memory o = ongs[msg.sender];
+//  }
+
+
+  function criarONG(string memory _ongNome) public{
     ONG storage o = ongs[msg.sender];
     o.owner = msg.sender;
     o.ongNome = _ongNome;
@@ -55,9 +158,10 @@ contract Donation {
     //Throw revert automatically if caller hasn't an ONG
     ONG storage o = ongs[msg.sender];
     //Cheack Why this is no updating
-    o.projetosNumero++;
-    contratoProjeto novoProjeto = new contratoProjeto(o.projetosNumero, _projetoNome, msg.sender, 0, _meta);
-    o.contratos.push(novoProjeto);   
+    Idprojeto = o.projetosNumero++;
+    contratoProjeto novoProjeto = new contratoProjeto(o.projetosNumero, _projetoNome, 0, _meta);
+    o.contratos.push(novoProjeto);
+    emit ProjetoCriado(Idprojeto, novoProjeto.contratoprojeto(_meta), true);   
    }
 
     //function mudarResponsavel(address _novoResponsavel) public {
@@ -70,6 +174,8 @@ contract Donation {
     //o.owner = _novoResponsavel;
     //}
 
+
+//será que aqui não tem um jeito de colocarmos só o ID do projeto, e fazer a doação pro contrato da ong? sem precisar entrar com o endereço da ong?
   function fazerDoacao(address _ongOwner, uint16 _projetoID) public payable {
     //The project's address is dependent on the ONGs address and the projectID 
     ONG memory o = ongs[_ongOwner];
@@ -79,6 +185,7 @@ contract Donation {
     //https://solidity-by-example.org/sending-ether/
     (bool sent, bytes memory data) = payable(address(o.contratos[_projetoID])).call{value: msg.value}("");
     o.contratos[_projetoID].projetoUpdate(msg.value, msg.sender);
+    emit DoacaoRealizada(o.contratos[_projetoID], msg.value, true); //retorno do evento 
   }
 
   function finalizarProjeto(uint16 _projetoID) public {
@@ -87,12 +194,14 @@ contract Donation {
     //diretamente. Nao apagaremos o endereco do contrato da lista de ONGs, pois 
     //alguem pode mandar ETH para o contrato 0x0...00.
     ONG memory o = ongs[msg.sender];
-    o.contratos[_projetoID].projetoFinalizar();    
+    o.contratos[_projetoID].projetoFinalizar();
+    emit ProjetoFinalizado(o.contratos[_projetoID].Projeto.saldo, msg.sender); //estou na duvida se esta correto chamar o saldo do projeto dessa forma   
   }
 
   function sacarSaldo (uint16 _projetoID) public payable{
     ONG memory o = ongs[msg.sender];
-    o.contratos[_projetoID].projetoSacar(msg.sender);   
+    o.contratos[_projetoID].projetoSacar(msg.sender); 
+    emit SaqueRealizado(msg.value,msg.sender);  
   }
 
   function verONGs() public view returns(ONG[] memory) {
@@ -129,74 +238,4 @@ contract Donation {
   // function verProjetoOwner(){} 
 
 }
-
-contract contratoProjeto {
-  Projeto public projeto;
-  address[] doadores;
-  uint256[] valores;
-
-//  StatusProjeto projetoStatus;
-
-  modifier onlyOwner(address _owner){
-    require(_owner == projeto.responsavel, "Not authorized");
-    _;
-  }
-
-  modifier onlyStatus(StatusProjeto statusEsperado){ 
-    require(statusEsperado == projeto.status);
-    _;     
-  }
-
-  constructor (
-    uint16 _projetoID, 
-    string memory _projetoNome, 
-    address _responsavel,
-    uint256 _saldo,
-    uint128 _meta
-    ){
-    projeto.projetoID = _projetoID;
-    projeto.projetoNome = _projetoNome;
-    projeto.responsavel = _responsavel;
-    projeto.saldo = _saldo;
-    projeto.meta = _meta;
-//    projetoStatus = StatusProjeto.Aberto;
-    }  
-  
-    function projetoVer() public view returns(Projeto memory) {
-      return projeto;
-    }
-
-    function projetoDoacoes() public view returns(address[] memory){
-      return doadores;
-    }
-
-    function projetoValores() public view returns(uint256[] memory){
-      return valores;
-    }
-
-    function projetoUpdate(uint256 _doacao, address _doador) public {
-      projeto.saldo = address(this).balance;
-      doadores.push(_doador);
-      valores.push(_doacao);
-    }
-
-    function projetoFinalizar() onlyStatus(StatusProjeto.Aberto) public {
-      projeto.status = StatusProjeto.Finalizado;
-    } 
-
-    function projetoSacar(address _owner) onlyOwner(_owner) onlyStatus(StatusProjeto.Finalizado) public payable{
-    //Devemos restringir essa funcao? Pois, alguem pode doar depositar
-    //depois que o projeto estiver finalizado, mas tabem o dono pode sacar
-    //a qualquer momento
-      (bool sent, bytes memory data) = payable(projeto.responsavel).call{value: address(this).balance}("");     
-      projeto.saldo = address(this).balance;
-    }
-
-    //https://solidity-by-example.org/sending-ether/
-    receive() external payable {}
-
-    //https://solidity-by-example.org/sending-ether/
-    fallback() external payable {}
-
-  }
 
