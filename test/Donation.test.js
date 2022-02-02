@@ -9,6 +9,8 @@ let accounts;
 let donation;
 let ong;
 let projeto;
+let recibo;
+let valorDoado = web3.utils.toWei('1','ether');
 
 beforeEach(async () => {
 	accounts =  await web3.eth.getAccounts();
@@ -31,6 +33,11 @@ beforeEach(async () => {
 	projeto = await donation.methods.verProjetos(accounts[0])
 		.call({from: accounts[0]});
 
+	//Doando ao Projeto
+	recibo = await donation.methods
+	.fazerDoacao(accounts[0], 0)
+	.send({from: accounts[1], gas: '5000000', value: valorDoado});
+
 });	
 
 describe('Donation', () => {
@@ -38,7 +45,7 @@ describe('Donation', () => {
 	console.log(await donation.options.address);
 	});
 
-	it('Usuario 1 criar ONG', async () => {
+	it('Usuario criar ONG', async () => {
 		await donation.methods.criarONG("ONG1").send({
 			from: accounts[1], gas: '5000000'
 		});
@@ -51,27 +58,43 @@ describe('Donation', () => {
 		assert.equal(accounts[0],ong[0][0]);
 
 	});
+
+	it('Doador Visualizar ONG', async() => {
+		//await donation.methods.ongs(accounts[0]).call({from:accounts[2]}));
+	});
 	
-	it('Doador Visualizar Projeto 0', async () => {
+	it('Doador Visualizar Projetos', async () => {
 		const proj = await donation.methods.verProjetos(accounts[0])
 		.call({from: accounts[2]});
-		
-		//projeto[0]; address do projeto;
 
+		//console.log(proj);
+	});
 
-		console.log(proj);
+	it('Doador Visualizar Projeto 0 de ONG', async() => {
+	  //await donation.methods.verProjeto(accounts[0],0).call({from: accounts[2]});
+
 	});
 
 	it('Doador Doar Para Projeto 0', async () => {
-		const recibo = await donation.methods
-			.fazerDoacao(accounts[0], 0)
-			.send({from: accounts[1], gas: '5000000', value: web3.utils.toWei('1','ether')});
 		
-		console.log(recibo.events);
-		assert.equal(await web3.eth.getBalance(projeto[0]), web3.utils.toWei('1','ether'));
-
-		//getBalance of contrato from recibo
+		console.log(`Voce doou: ${recibo.events.FazerDoacao.returnValues[0]} ETH para o projeto ${recibo.events.FazerDoacao.returnValues[1]}`);
+		assert.equal(await web3.eth.getBalance(projeto[0]), valorDoado);
 	});
+
+	it('Ver Doadores do Projeto 0', async() => {
+		const doadores = await donation.methods.verDoadores(accounts[0],0)
+		.call({from: accounts[3]});
+
+		assert.equal(doadores[0], accounts[1]);
+	});
+
+	it('Ver Valores do Projeto 0', async() => {
+		const valores = await donation.methods.verValores(accounts[0],0)
+		.call({from: accounts[3]});
+
+		assert.equal(valores[0], valorDoado);
+	});
+
 
 });
 

@@ -1,3 +1,4 @@
+//https://ethereum.stackexchange.com/questions/82903/trying-to-compile-running-node-compile-js-but-get-error-assert-js350-thro
 const path = require('path');
 const fs = require('fs');
 const solc = require('solc');
